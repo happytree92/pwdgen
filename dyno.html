@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #0F4C5C;
+            color: #F5F0F6;
+            margin: 0;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 50%; /* Shrink the box to 50% width */
+            height: 80%;
+            background-color: #0F4C5C;
+            color: #F5F0F6;
+        }
+        #result {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .password {
+            display: flex;
+            justify-content: center; /* Center the output text */
+            align-items: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #9A031E, #FB8B24);
+            padding: 10px;
+            border-radius: 10px;
+            position: relative;
+            width: 100%;
+        }
+        .password span {
+            flex-grow: 1;
+            text-align: center; /* Center the output text */
+        }
+        button {
+            background: linear-gradient(135deg, #E36414, #FB8B24);
+            color: #F5F0F6;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: linear-gradient(135deg, #9A031E, #E36414);
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #F5F0F6;
+            animation: confetti 1s ease-in-out;
+        }
+        @keyframes confetti {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)); opacity: 0; }
+        }
+        #history {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #0F4C5C;
+            color: #F5F0F6;
+        }
+        #historyList {
+            width: 100%;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #historyList li {
+            padding: 5px;
+            margin-bottom: 5px;
+            width: 100%;
+            text-align: center; /* Center the results in the history output */
+            background: none; /* Remove background formatting */
+            color: #F5F0F6; /* Ensure text color is visible */
+        }
+        .spacer {
+            margin-top: 10px; /* Add space between the generate button and the amount of passwords text */
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="result">
+            <h2>Password Generator</h2>
+            <div class="password" id="passwordBox">
+                <span id="password">Click "Generate" to get a password</span>
+                <button onclick="copyText()">Copy</button>
+            </div>
+            <button onclick="generatePassword()">Generate</button>
+            <div class="spacer"></div>
+            <label for="quantity">Number of passwords:</label>
+            <input type="number" id="quantity" name="quantity" min="1" max="50" value="1">
+        </div>
+        <div id="history">
+            <h2>History Log</h2>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+
+    <script>
+        function generatePassword() {
+            const quantity = document.getElementById('quantity').value;
+            for (let i = 0; i < quantity; i++) {
+                fetch('https://www.dinopass.com/password/strong')
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('password').innerText = data;
+                        addToHistory(data);
+                        showConfetti();
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function addToHistory(password) {
+            const historyList = document.getElementById('historyList');
+            const listItem = document.createElement('li');
+            listItem.textContent = password;
+            historyList.appendChild(listItem);
+            if (historyList.childElementCount > 50) {
+                historyList.removeChild(historyList.firstChild);
+            }
+        }
+
+        function copyText() {
+            const passwordText = document.getElementById('password').innerText;
+            navigator.clipboard.writeText(passwordText)
+                .then(() => alert('Password copied to clipboard!'))
+                .catch(err => console.error('Error copying text: ', err));
+        }
+
+        function showConfetti() {
+            const passwordBox = document.getElementById('passwordBox');
+            const boxRect = passwordBox.getBoundingClientRect();
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = (Math.random() * (boxRect.width + 80) - 80) + 'px';
+                confetti.style.top = (Math.random() * (boxRect.height + 80) - 80) + 'px';
+                confetti.style.setProperty('--x', (Math.random() - 0.5) * 100 + 'px');
+                confetti.style.setProperty('--y', (Math.random() - 0.5) * 100 + 'px');
+                confetti.style.backgroundColor = getRandomColor();
+                passwordBox.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 500);
+            }
+        }
+
+        function getRandomColor() {
+            const colors = ['#0F4C5C', '#E36414', '#FB8B24', '#9A031E', '#5F0F40'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+    </script>
+</body>
+</html>
